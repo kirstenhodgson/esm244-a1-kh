@@ -13,12 +13,37 @@ library(here)
 library(janitor)
 library(patchwork)
 library(readxl)
-
+library(lubridate)
 ```
 
-### 1. Read in data and data wrangling
+### 1. Read in data and initial data wrangling
 
 ```{r}
+#Use read_excel to read in data from an excel spreadsheet
+sierra_amphibians <- read_excel(here("data","sierra_amphibians.xlsx")) 
 
+#While preserving the original data, create a subset with some wrangling
+amphibians_clean <- sierra_amphibians %>% 
+  clean_names() %>% #convert variables to lower snake
+  mutate(across(where(is.character), tolower)) %>% #character obs lowercase
+  mutate(survey_date = ymd(survey_date)) %>% #change the year to a date class
+  mutate(year = year(survey_date)) #Create a new column with just year
+```
+
+###2. Task 1A: Mountain yellow-legged frog counts
+
+```{r}
+#Create another subset for R. muscosa, then get counts
+r_muscosa_counts <- amphibians_clean %>% 
+  filter(amphibian_species == "ramu") %>% #Filter by species
+  filter(amphibian_life_stage != "eggmass") %>% #Remove eggmass life stage
+  count(year, amphibian_life_stage) #Count R. muscosa obs by year, life stage
+```
+
+```{r}
+#Create a plot of counts and customize
+ggplot(data = r_muscosa_counts, 
+       aes(x = year, y = n, color = amphibian_life_stage)) +
+  geom_point()
 ```
 
