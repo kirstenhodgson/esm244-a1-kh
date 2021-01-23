@@ -1,0 +1,24 @@
+---
+title: "ESM 244 Assignment 1 Task 1"
+author: "Kirsten Hodgson"
+date: "1/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(patchwork)
+library(readxl)
+
+```
+
+### 1. Read in data and data wrangling
+
+```{r}
+
+```
+
