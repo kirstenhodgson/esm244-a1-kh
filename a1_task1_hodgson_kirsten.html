@@ -195,6 +195,8 @@ summary {
 </div>
 
 
+<div id="read-in-data-and-set-up" class="section level4">
+<h4>Read-in data and set-up</h4>
 <pre class="r"><code># Read in data and initial wrangling
 #Use read_excel to read in data from an excel spreadsheet
 sierra_amphibians &lt;- read_excel(here(&quot;data&quot;,&quot;sierra_amphibians.xlsx&quot;)) 
@@ -205,6 +207,7 @@ amphibians_clean &lt;- sierra_amphibians %&gt;%
   mutate(across(where(is.character), tolower)) %&gt;% #character obs lowercase
   mutate(survey_date = ymd(survey_date)) %&gt;% #change the year to a date class
   mutate(year = year(survey_date)) #Create a new column with just year</code></pre>
+</div>
 <div id="task-1a-mountain-yellow-legged-frog-counts-by-life-stage-and-year" class="section level4">
 <h4>Task 1a: Mountain yellow-legged frog counts by life stage and year</h4>
 <pre class="r"><code>#Create another subset for R. muscosa, then get counts
