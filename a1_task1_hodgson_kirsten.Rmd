@@ -16,9 +16,9 @@ library(readxl)
 library(lubridate)
 ```
 
-### 1. Read in data and initial data wrangling
 
 ```{r}
+# Read in data and initial wrangling
 #Use read_excel to read in data from an excel spreadsheet
 sierra_amphibians <- read_excel(here("data","sierra_amphibians.xlsx")) 
 
@@ -30,20 +30,46 @@ amphibians_clean <- sierra_amphibians %>%
   mutate(year = year(survey_date)) #Create a new column with just year
 ```
 
-###2. Task 1A: Mountain yellow-legged frog counts
+#### Task 1a: Mountain yellow-legged frog counts by life stage and year
 
 ```{r}
 #Create another subset for R. muscosa, then get counts
 r_muscosa_counts <- amphibians_clean %>% 
   filter(amphibian_species == "ramu") %>% #Filter by species
   filter(amphibian_life_stage != "eggmass") %>% #Remove eggmass life stage
-  count(year, amphibian_life_stage) #Count R. muscosa obs by year, life stage
+  group_by(year) %>% 
+  count(amphibian_life_stage, wt = amphibian_number) #Count R. muscosa obs by year, life stage
 ```
 
-```{r}
+```{r, fig.width = 12}
+#Create a character vector to use for labeling facets later
+facet_labels <- c(`adult` = "Adult",
+                  `subadult` = "Sub-Adult",
+                  `tadpole` = "Tadpole")
 #Create a plot of counts and customize
 ggplot(data = r_muscosa_counts, 
-       aes(x = year, y = n, color = amphibian_life_stage)) +
-  geom_point()
+       aes(x = year, y = n)) +
+  geom_point(size = 2.3, color = "darkgreen") + #Customize size and color of points
+  labs(x = "\nYear", y = "Count\n") + #Add axis labels
+  facet_wrap(~amphibian_life_stage, #Facet by life stage
+             scales = "free_y", #With free y-axis scales to account for very different numbers
+             labeller = as_labeller(facet_labels)) + #And the labels from the earlier vector
+  theme_minimal() +
+  theme(legend.position = "none") #Remove legend
+```
+
+**Figure 1.** Counts of mountain yellow-legged frog (*Rana muscosa*) by life stage in water bodies in the Southern Sierra Nevada, 1995-1997 and 2000-2002. Data source: Knapp, R.A., C. Pavelka, E.E. Hegeman, and T.C. Smith. 2020. The Sierra Lakes Inventory Project: Non-Native fish and community composition of lakes and ponds in the Sierra Nevada, California ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d835832d7fd00d9e4466e44eea87fab3
+
+#### Task 1b: Lakes with the highest abundance of mountain yellow-legged frog adults and subadults
+
+```{r}
+#Wrangling for task 1b
+lakes_r_muscosa <- amphibians_clean %>% 
+  filter(amphibian_species == "ramu",
+         amphibian_life_stage %in% c("adult", "subadult")) %>% 
+  mutate(lake = case_when(lake_id != 1 ~ "Lake")) %>% 
+  unite(col = lake_id, c(lake, lake_id), sep = " ")
+
+#Need to: total counts of combined adult and subadult by lake, keep only top 5 lakes, fct_reorder to get lakes in ascending or descending order
 ```
 
