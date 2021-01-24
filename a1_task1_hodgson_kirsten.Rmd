@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 
 library(tidyverse)
 library(here)
@@ -47,7 +47,7 @@ facet_labels <- c(`adult` = "Adult",
                   `subadult` = "Sub-Adult",
                   `tadpole` = "Tadpole")
 #Create a plot of counts and customize
-ggplot(data = r_muscosa_counts, 
+counts_by_year <- ggplot(data = r_muscosa_counts, 
        aes(x = year, y = n)) +
   geom_point(size = 2.3, color = "darkgreen") + #Customize size and color of points
   labs(x = "\nYear", y = "Count\n") + #Add axis labels
@@ -70,7 +70,20 @@ lakes_r_muscosa <- amphibians_clean %>%
   mutate(lake_id = paste("Lake", lake_id, sep = " ")) %>% #Add "Lake" before id number
   count(lake_id, wt = amphibian_number) %>% #Count the total number of obs per lake for both stages
   rename(r_muscosa_count = n) %>% #Change name of count column
-  slice_max(r_muscosa_count, n = 5) %>% #Kepp only the top 5 lakes
+  slice_max(r_muscosa_count, n = 5) %>% #Keep only the top 5 lakes
   mutate(lake_id = fct_reorder(lake_id, desc(r_muscosa_count))) #Reorder the lake id so in order of descending r muscosa count
 ```
+
+```{r}
+#Create a graph for task 1b
+counts_by_lake <- ggplot(data = lakes_r_muscosa, aes(x = lake_id, y = r_muscosa_count)) +
+  geom_col(fill = "darkgreen", width = 0.6) + #Column graph with dark green narrower bars
+  scale_y_continuous(limits = c(0,2500), #Set the limits in the y direction
+                     breaks = c(0,500,1000,1500,2000,2500), #With specified breaks
+                     expand = c(0, 0.05)) + #And shorter distance between 0 and x-axis labels
+  labs(x = "Lake\n", y = "\nTotal Adult and Sub-adult Count") +
+  theme_minimal()
+```
+
+#### Task 1c: Creating a compound figure with `patchwork`
 
