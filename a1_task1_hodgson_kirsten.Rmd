@@ -65,11 +65,12 @@ ggplot(data = r_muscosa_counts,
 ```{r}
 #Wrangling for task 1b
 lakes_r_muscosa <- amphibians_clean %>% 
-  filter(amphibian_species == "ramu",
-         amphibian_life_stage %in% c("adult", "subadult")) %>% 
-  mutate(lake = case_when(lake_id != 1 ~ "Lake")) %>% 
-  unite(col = lake_id, c(lake, lake_id), sep = " ")
-
-#Need to: total counts of combined adult and subadult by lake, keep only top 5 lakes, fct_reorder to get lakes in ascending or descending order
+  filter(amphibian_species == "ramu", #Keep only observation of rana muscosa
+         amphibian_life_stage %in% c("adult", "subadult")) %>% #Which are also adult or subadult
+  mutate(lake_id = paste("Lake", lake_id, sep = " ")) %>% #Add "Lake" before id number
+  count(lake_id, wt = amphibian_number) %>% #Count the total number of obs per lake for both stages
+  rename(r_muscosa_count = n) %>% #Change name of count column
+  slice_max(r_muscosa_count, n = 5) %>% #Kepp only the top 5 lakes
+  mutate(lake_id = fct_reorder(lake_id, desc(r_muscosa_count))) #Reorder the lake id so in order of descending r muscosa count
 ```
 
