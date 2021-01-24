@@ -21,10 +21,14 @@ usda_nutrients <- read_csv(here("data","usda_nutrients.csv")) %>%
   clean_names() %>% 
   mutate(across(where(is.character), tolower))
 
-spices_nutrients_pca <- usda_nutrients %>% 
+spices_nutrients <- usda_nutrients %>% 
   filter(food_group == "spices and herbs") %>% 
   select(ends_with("_mg"), ends_with("_mcg")) %>% 
-  select(vit_b6_mg:vit_a_mcg, folate_mcg:selenium_mcg) %>% 
+  select(vit_b6_mg:iron_mg, vit_a_mcg, folate_mcg)
+
+colnames(spices_nutrients) = c("Vitamin B6", "Vitamin C", "Vitamin E", "Niacin", "Riboflavin", "Thiamin", "Calcium", "Iron", "Magnesium", "Manganese", "Phosphorus", "Zinc", "Vitamin A", "Folate", "Copper", "Selenium")
+
+spices_nutrients_pca <- spices_nutrients %>% 
   drop_na() %>% 
   scale() %>% 
   prcomp()
@@ -33,12 +37,17 @@ spices_nutrients_pca$rotation
 
 nutrients_complete <- usda_nutrients %>% 
   filter(food_group == "spices and herbs") %>% 
+  select(ends_with("_mg"), ends_with("_mcg")) %>% 
+  select(vit_b6_mg:iron_mg, vit_a_mcg, folate_mcg) %>% 
   drop_na(ends_with("_mg"), ends_with("_mcg"))
-
+  
 autoplot(spices_nutrients_pca,
          data = nutrients_complete,
          loadings = TRUE,
-         loadings.label = TRUE) +
+         loadings.label = TRUE,
+         loadings.colour = "blue",
+         loadings.label.colour = "red",
+         loadings.label.repel = T) +
   theme_minimal()
 ```
 
