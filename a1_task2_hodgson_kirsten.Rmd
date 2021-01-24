@@ -1,0 +1,44 @@
+---
+title: "ESM 244 Assignment 1 Task 2"
+author: "Kirsten Hodgson"
+date: "1/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggfortify)
+```
+
+#### Read-in data and set-up
+
+```{r}
+usda_nutrients <- read_csv(here("data","usda_nutrients.csv")) %>% 
+  clean_names() %>% 
+  mutate(across(where(is.character), tolower))
+
+spices_nutrients_pca <- usda_nutrients %>% 
+  filter(food_group == "spices and herbs") %>% 
+  select(ends_with("_mg"), ends_with("_mcg")) %>% 
+  select(vit_b6_mg:vit_a_mcg, folate_mcg:selenium_mcg) %>% 
+  drop_na() %>% 
+  scale() %>% 
+  prcomp()
+
+spices_nutrients_pca$rotation
+
+nutrients_complete <- usda_nutrients %>% 
+  filter(food_group == "spices and herbs") %>% 
+  drop_na(ends_with("_mg"), ends_with("_mcg"))
+
+autoplot(spices_nutrients_pca,
+         data = nutrients_complete,
+         loadings = TRUE,
+         loadings.label = TRUE) +
+  theme_minimal()
+```
+
