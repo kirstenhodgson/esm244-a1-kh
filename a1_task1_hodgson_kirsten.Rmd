@@ -16,6 +16,7 @@ library(readxl)
 library(lubridate)
 ```
 
+#### Read-in data and set-up
 
 ```{r}
 # Read in data and initial wrangling
@@ -29,6 +30,7 @@ amphibians_clean <- sierra_amphibians %>%
   mutate(survey_date = ymd(survey_date)) %>% #change the year to a date class
   mutate(year = year(survey_date)) #Create a new column with just year
 ```
+
 
 #### Task 1a: Mountain yellow-legged frog counts by life stage and year
 
@@ -58,6 +60,7 @@ counts_by_year <- ggplot(data = r_muscosa_counts,
   theme(legend.position = "none") #Remove legend
 ```
 
+
 #### Task 1b: Lakes with the highest abundance of mountain yellow-legged frog adults and subadults
 
 ```{r}
@@ -82,6 +85,7 @@ counts_by_lake <- ggplot(data = lakes_r_muscosa, aes(x = lake_id, y = r_muscosa_
   labs(x = "\nLake", y = "Total Adult and Sub-adult Count\n") +
   theme_minimal()
 ```
+
 
 #### Task 1c: Creating a compound figure with `patchwork`
 
