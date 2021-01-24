@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = F, message = F)
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 
 library(tidyverse)
 library(here)
@@ -47,7 +47,7 @@ facet_labels <- c(`adult` = "Adult",
                   `subadult` = "Sub-Adult",
                   `tadpole` = "Tadpole")
 #Create a plot of counts and customize
-ggplot(data = r_muscosa_counts, 
+counts_by_year <- ggplot(data = r_muscosa_counts, 
        aes(x = year, y = n)) +
   geom_point(size = 2.3, color = "darkgreen") + #Customize size and color of points
   labs(x = "\nYear", y = "Count\n") + #Add axis labels
@@ -58,18 +58,37 @@ ggplot(data = r_muscosa_counts,
   theme(legend.position = "none") #Remove legend
 ```
 
-**Figure 1.** Counts of mountain yellow-legged frog (*Rana muscosa*) by life stage in water bodies in the Southern Sierra Nevada, 1995-1997 and 2000-2002. Data source: Knapp, R.A., C. Pavelka, E.E. Hegeman, and T.C. Smith. 2020. The Sierra Lakes Inventory Project: Non-Native fish and community composition of lakes and ponds in the Sierra Nevada, California ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d835832d7fd00d9e4466e44eea87fab3
-
 #### Task 1b: Lakes with the highest abundance of mountain yellow-legged frog adults and subadults
 
 ```{r}
 #Wrangling for task 1b
 lakes_r_muscosa <- amphibians_clean %>% 
-  filter(amphibian_species == "ramu",
-         amphibian_life_stage %in% c("adult", "subadult")) %>% 
-  mutate(lake = case_when(lake_id != 1 ~ "Lake")) %>% 
-  unite(col = lake_id, c(lake, lake_id), sep = " ")
-
-#Need to: total counts of combined adult and subadult by lake, keep only top 5 lakes, fct_reorder to get lakes in ascending or descending order
+  filter(amphibian_species == "ramu", #Keep only observation of rana muscosa
+         amphibian_life_stage %in% c("adult", "subadult")) %>% #Which are also adult or subadult
+  mutate(lake_id = paste("Lake", lake_id, sep = " ")) %>% #Add "Lake" before id number
+  count(lake_id, wt = amphibian_number) %>% #Count the total number of obs per lake for both stages
+  rename(r_muscosa_count = n) %>% #Change name of count column
+  slice_max(r_muscosa_count, n = 5) %>% #Keep only the top 5 lakes
+  mutate(lake_id = fct_reorder(lake_id, desc(r_muscosa_count))) #Reorder the lake id so in order of descending r muscosa count
 ```
 
+```{r}
+#Create a graph for task 1b
+counts_by_lake <- ggplot(data = lakes_r_muscosa, aes(x = lake_id, y = r_muscosa_count)) +
+  geom_col(fill = "darkgreen", width = 0.6) + #Column graph with dark green narrower bars
+  scale_y_continuous(limits = c(0,2500), #Set the limits in the y direction
+                     breaks = c(0,500,1000,1500,2000,2500), #With specified breaks
+                     expand = c(0, 0.05)) + #And shorter distance between 0 and x-axis labels
+  labs(x = "\nLake", y = "Total Adult and Sub-adult Count\n") +
+  theme_minimal()
+```
+
+#### Task 1c: Creating a compound figure with `patchwork`
+
+```{r, fig.width = 10, fig.height = 8}
+r_muscosa_fig <- ((counts_by_year + theme(plot.margin = unit(c(0,0,20,0), "pt")))/counts_by_lake)
+#Arrange the graphs over each other, with some margin added to the top plot to increase spacing
+r_muscosa_fig
+```
+
+**Figure 1. Counts of mountain yellow-legged frog (*Rana muscosa*).** The top figure shows *R. muscosa* by life stage (adult, sub-adult, and tadpole) and year (1995-2002) in all observed water bodies in the Southern Sierra Nevada. The bottom figure shows total count over all study years of adult and sub-adult *R. muscosa* in the five lakes with the highest *R. muscosa* counts. Data source: Knapp, R.A., C. Pavelka, E.E. Hegeman, and T.C. Smith. 2020. The Sierra Lakes Inventory Project: Non-Native fish and community composition of lakes and ponds in the Sierra Nevada, California ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d835832d7fd00d9e4466e44eea87fab3
